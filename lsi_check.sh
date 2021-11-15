@@ -16,6 +16,7 @@ MAIL_DEST="user1@domain.ru,user2@domain.ru"
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 CURDATE="$(date +%d-%m-%Y)"
 LOGFILE="${HOST}.log"
+# - #
 
 # Задаем функции утилиты logger;
 function logger () {
