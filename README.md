@@ -26,5 +26,5 @@ Sample storcli commands:
  - Virtual Drives:
 ./storcli /c0 /vall show
 
-./lsi_check.sh '1/0 0/1' 2|n esxi|linux ip LOGIN 'pass'
+./lsi_check.sh '1/0 0/1' 2|n esxi|linux ip login 'pass'
 ```
