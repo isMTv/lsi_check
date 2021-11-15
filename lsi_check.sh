@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 # requared packages: sshpass, mailutils
-# ./lsi_check.sh '1/0 0/1' 2|n esxi|linux ip LOGIN 'pass'
+# ./lsi_check.sh '1/0 0/1' 2|n esxi|linux ip login 'pass'
 
-VIRT_DRIVES=( $1 )
-NUMBER_VIRT_DRIVES="$2"
-CMD_VERSION="$3"
-HOST="$4"
-LOGIN="$5"
-SSH_PASS="$6"
 CHECK_INET="8.8.8.8"
 MAIL_FROM="lsi-script@domain.ru"
 MAIL_DEST="user1@domain.ru,user2@domain.ru"
+MAIL_ONLY_BAD="true" # true or false;
 
 # - #
+VIRT_DRIVES=( ${1:?} )
+NUMBER_VIRT_DRIVES="${2:?}"
+CMD_VERSION="${3:?}"
+HOST="${4:?}"
+LOGIN="${5:?}"
+SSH_PASS="${6:?}"
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 CURDATE="$(date +%d-%m-%Y)"
 LOGFILE="${HOST}.log"
@@ -37,7 +38,9 @@ send_mail () {
     if ! ping -c 3 "$CHECK_INET" > /dev/null; then
         logger "[-] [@send_mail] Have Internet Problems!" ; logger_exit
     else
-        echo -e "${mail_body}" | mail -s "LSI - Raid: $HOST" -r "$MAIL_FROM" "$MAIL_DEST"
+        if [ -n "${mail_body}" ]; then
+            echo -e "${mail_body}" | mail -s "LSI - Raid: $HOST" -r "$MAIL_FROM" "$MAIL_DEST"
+        fi
     fi
 }
 
@@ -60,20 +63,22 @@ fi
 get_state () {
     cur_vds="$(echo "${state_VIRT_DRIVES}" | grep "${v_drive}" | awk '{print $2,$3,$11}')"
     read -r type state name <<< "$cur_vds"
-    if [ -z $type ]; then type=":empty:" ; fi ; if [ -z $state ]; then state=":empty:" ; fi ; if [ -z $name ]; then name=":empty:" ; fi
+    if [ -z "$type" ]; then type=":empty:" ; fi ; if [ -z "$state" ]; then state=":empty:" ; fi ; if [ -z "$name" ]; then name=":empty:" ; fi
 }
 
 # Проверка полученных значений;
 check_state () {
     con_state="Condition [$type], virtual drive [$v_drive], name [$name]"
     if [ "$state" != "Optl" ]; then
-        false_con_state="[-] ${con_state} - BAD :("
+        false_con_state="[-] ${con_state} - BAD!"
         logger "${false_con_state}"
         mail_body+="${false_con_state}\n"
     else
         true_con_state="[+] ${con_state} - Good!"
         logger "${true_con_state}"
-        mail_body+="${true_con_state}\n"
+        if [ "$MAIL_ONLY_BAD" != "true" ]; then
+            mail_body+="${true_con_state}\n"
+        fi
     fi
 }
 
