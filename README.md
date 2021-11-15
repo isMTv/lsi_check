@@ -4,6 +4,7 @@ Script for monitoring storage on LSI raid controllers.
 ## Overview:
 * The script connects to the server via ssh and communicates with the disks controller via storcli.
 * Duplicates the output of the storage logs to the mail.
+* Ability to enable sending notifications only when the raid array is in bad condition.
 
 ### Example script output logs:
 ```
